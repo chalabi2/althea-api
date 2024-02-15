@@ -11,18 +11,18 @@ import (
 	"github.com/rs/zerolog/log"
 
 	csr "github.com/Canto-Network/Canto/v6/x/csr/types"
-	inflation "github.com/Canto-Network/Canto/v6/x/inflation/types"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types" // Import the Cosmos SDK's mint types
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 type NativeQueryEngine struct {
-	redisclient *redis.Client
-	interval    time.Duration
+	redisclient           *redis.Client
+	interval              time.Duration
 	//query handlers
 	CSRQueryHandler       csr.QueryClient
 	GovQueryHandler       gov.QueryClient
-	InflationQueryHandler inflation.QueryClient
+	InflationQueryHandler minttypes.QueryClient // Use the correct QueryClient type from the Cosmos SDK's mint module
 	StakingQueryHandler   staking.QueryClient
 }
 
@@ -33,7 +33,7 @@ func NewNativeQueryEngine() *NativeQueryEngine {
 		interval:              time.Duration(config.QueryInterval),
 		CSRQueryHandler:       csr.NewQueryClient(config.GrpcClient),
 		GovQueryHandler:       gov.NewQueryClient(config.GrpcClient),
-		InflationQueryHandler: inflation.NewQueryClient(config.GrpcClient),
+		InflationQueryHandler: minttypes.NewQueryClient(config.GrpcClient), // Use the NewQueryClient function from the Cosmos SDK's mint module
 		StakingQueryHandler:   staking.NewQueryClient(config.GrpcClient),
 	}
 }
@@ -79,14 +79,20 @@ func (nqe *NativeQueryEngine) StartNativeQueryEngine(ctx context.Context) {
 		// STAKING
 		//
 		stakingApr, err := GetStakingAPR(ctx, nqe.StakingQueryHandler, nqe.InflationQueryHandler)
-		if err != nil {
-			nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to get staking APR")
-		}
-		// save to cache
-		err = nqe.SetJsonToCache(ctx, config.StakingAPR, stakingApr)
-		if err != nil {
-			nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to set staking APR")
-		}
+        if err != nil {
+            log.Error().Err(err).Str("func", "GetStakingAPR").Msg("Failed to get staking APR")
+            continue // Skip this iteration on error
+        }
+
+        // Convert stakingApr to a string or another format suitable for caching
+        aprStr := stakingApr.String() // Example conversion; adjust based on your needs
+
+        // Save to cache
+        err = nqe.SetJsonToCache(ctx, config.StakingAPR, aprStr)
+        if err != nil {
+            log.Error().Err(err).Str("func", "SetJsonToCache").Msg("Failed to set staking APR in cache")
+            // Handle the error or continue based on your error handling strategy
+        }
 		// get and save all validators to cache
 		validators, validatorMap, err := GetValidators(ctx, nqe.StakingQueryHandler)
 		if err != nil {
@@ -104,18 +110,18 @@ func (nqe *NativeQueryEngine) StartNativeQueryEngine(ctx context.Context) {
 		//
 		// CSR
 		//
-		csrs, csrMap, err := GetCSRS(ctx, nqe.CSRQueryHandler)
-		if err != nil {
-			nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to get CSRs")
-		}
-		err = nqe.SetJsonToCache(ctx, config.AllCSRs, csrs)
-		if err != nil {
-			nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to set CSRs")
-		}
-		err = nqe.SetMapToCache(ctx, config.CSRMap, csrMap)
-		if err != nil {
-			nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to set CSR map")
-		}
+		// csrs, csrMap, err := GetCSRS(ctx, nqe.CSRQueryHandler)
+		// if err != nil {
+		// 	nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to get CSRs")
+		// }
+		// err = nqe.SetJsonToCache(ctx, config.AllCSRs, csrs)
+		// if err != nil {
+		// 	nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to set CSRs")
+		// }
+		// err = nqe.SetMapToCache(ctx, config.CSRMap, csrMap)
+		// if err != nil {
+		// 	nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to set CSR map")
+		// }
 
 		//
 		// GOVSHUTTLE

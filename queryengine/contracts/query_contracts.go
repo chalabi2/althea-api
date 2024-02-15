@@ -171,16 +171,18 @@ func (qe *QueryEngine) StartContractQueryEngine(ctx context.Context) {
 			continue
 		}
 
-		// decode results
-		ret, err := qe.viewcalls.Decode(res)
-		if err != nil {
-			contractQueryEngineFatalLog(err, "StartContractQueryEngine", "failed to decode results")
-		}
+// decode results
+ret, err := qe.viewcalls.Decode(res)
+if err != nil {
+    log.Error().Err(err).Msg("Failed to decode results")
+    log.Warn().Msg("Decoding results failed but continuing...")
+}
 
 		// get ctokens, pairs and others from multicall results
 		blocknumber, ctokens, pairs, others, err := ProcessMulticallResults(ctx, ret)
 		if err != nil {
-			contractQueryEngineFatalLog(err, "StartContractQueryEngine", "failed to process multicall results")
+			log.Error().Err(err).Msg("Failed to decode results")
+			log.Warn().Msg("failed to process multicall results")
 		}
 
 		// set blocknumber to redis

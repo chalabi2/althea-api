@@ -6,10 +6,10 @@ import (
 	"time"
 
 	csr "github.com/Canto-Network/Canto/v6/x/csr/types"
-	inflation "github.com/Canto-Network/Canto/v6/x/inflation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	query "github.com/cosmos/cosmos-sdk/types/query"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
+	inflation "github.com/cosmos/cosmos-sdk/x/mint/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/rs/zerolog/log"
 )
@@ -57,20 +57,28 @@ func GetValidators(ctx context.Context, queryClient staking.QueryClient) ([]Vali
 	}
 	return *allValidators, validatorMap, nil
 }
-func GetStakingAPR(ctx context.Context, stakingQueryClient staking.QueryClient, inflationQueryClient inflation.QueryClient) (string, error) {
-	//get pool
-	pool, err := stakingQueryClient.Pool(ctx, &staking.QueryPoolRequest{})
-	if err != nil {
-		return "", err
-	}
-	// get mint provision
-	mintProvision, err := inflationQueryClient.EpochMintProvision(ctx, &inflation.QueryEpochMintProvisionRequest{})
-	if err != nil {
-		return "", err
-	}
-	// get global staking apr
-	stakingApr := CalculateStakingAPR(*pool, *mintProvision)
-	return stakingApr.String(), nil
+func GetStakingAPR(ctx context.Context, stakingQueryClient staking.QueryClient, inflationQueryClient inflation.QueryClient) (sdk.Dec, error) {
+    // Fetch pool information
+    poolResp, err := stakingQueryClient.Pool(ctx, &staking.QueryPoolRequest{})
+    if err != nil {
+        return sdk.Dec{}, err // Return error if fetching pool fails
+    }
+    
+    // Fetch mint provision information
+    mintProvisionResp, err := inflationQueryClient.AnnualProvisions(ctx, &inflation.QueryAnnualProvisionsRequest{})
+    if err != nil {
+        return sdk.Dec{}, err // Return error if fetching mint provision fails
+    }
+    
+    bondedTokensDec := sdk.NewDecFromInt(poolResp.Pool.BondedTokens)
+    if bondedTokensDec.IsZero() {
+        return sdk.NewDec(0), nil // Avoid division by zero, not necessarily an error
+    }
+    
+    mintProvisionAmount := mintProvisionResp.AnnualProvisions
+    apr := mintProvisionAmount.Quo(bondedTokensDec).MulInt64(100) // Adjusted to multiply by 100 for percentage
+    
+    return apr, nil // Return calculated APR and no error
 }
 
 // GOVSHUTTLE

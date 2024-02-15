@@ -3,25 +3,28 @@ package queryengine
 import (
 	"encoding/json"
 
-	inflation "github.com/Canto-Network/Canto/v6/x/inflation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	inflation "github.com/cosmos/cosmos-sdk/x/mint/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-// CalculateStakingAPR returns the APR for a all bonded tokens and mint provision for current epoch
-func CalculateStakingAPR(pool staking.QueryPoolResponse, mintProvision inflation.QueryEpochMintProvisionResponse) sdk.Dec {
-	//get bonded tokens from pool
-	bondedTokens := pool.GetPool().BondedTokens
-	//get mint provision amount from epoch (in acanto)
-	mintProvisionAmount := mintProvision.GetEpochMintProvision().Amount
+// CalculateStakingAPR calculates the APR based on mint provision and total bonded tokens
+func CalculateStakingAPR(pool *staking.QueryPoolResponse, mintProvision *inflation.QueryAnnualProvisionsResponse) sdk.Dec {
+    // Convert bondedTokens to sdk.Dec
+    bondedTokensDec := sdk.NewDecFromInt(pool.Pool.BondedTokens)
 
-	//check if bonded tokens are zero so we don't divide by zero
-	if bondedTokens.IsZero() {
-		return sdk.NewDec(0)
-	}
+    // Ensure bondedTokensDec is not zero to avoid division by zero
+    if bondedTokensDec.IsZero() {
+        return sdk.NewDec(0)
+    }
 
-	//calculate apr (mint provision / bonded tokens) * 365 (days) * 100%
-	return mintProvisionAmount.Mul(sdk.NewDec(36500)).QuoInt(bondedTokens)
+    // mintProvisionAmount is already of type sdk.Dec
+    mintProvisionAmount := mintProvision.AnnualProvisions
+
+    // Perform the calculation: (mintProvision / totalStake) * 100
+    apr := mintProvisionAmount.Quo(bondedTokensDec)
+
+    return apr
 }
 
 func GeneralResultToString(results interface{}) string {

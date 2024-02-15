@@ -73,7 +73,7 @@ func routerStaking(app *fiber.App) {
 func Run(ctx context.Context) {
 	app := fiber.New(
 		fiber.Config{
-			AppName:      "Canto API",
+			AppName:      "Althea API",
 			ServerHeader: "Fiber",
 		})
 
