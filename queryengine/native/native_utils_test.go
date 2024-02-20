@@ -4,9 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	inflation "github.com/cosmos/cosmos-sdk/x/mint/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -57,7 +56,7 @@ func TestGetStakingAPR(t *testing.T) {
 					},
 				},
 				mintProvision: inflation.QueryAnnualProvisionsResponse{
-					AnnualProvisions: types.NewDecWithPrec(100, 0),
+					AnnualProvisions: types.NewDecWithPrec(100, 0)
 				},
 			},
 			want: sdk.NewDec(36500000000000),

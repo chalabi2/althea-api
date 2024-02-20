@@ -7,13 +7,13 @@ import (
 
 	"althea-api/config"
 
-	"github.com/redis/go-redis/v9"
-	"github.com/rs/zerolog/log"
-
 	csr "github.com/Canto-Network/Canto/v6/x/csr/types"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types" // Import the Cosmos SDK's mint types
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog/log"
 )
 
 type NativeQueryEngine struct {
@@ -24,6 +24,7 @@ type NativeQueryEngine struct {
 	GovQueryHandler       gov.QueryClient
 	InflationQueryHandler minttypes.QueryClient // Use the correct QueryClient type from the Cosmos SDK's mint module
 	StakingQueryHandler   staking.QueryClient
+	DistributionQueryHandler distrtypes.QueryClient
 }
 
 // Returns a NativeQueryEngine instance
@@ -35,6 +36,7 @@ func NewNativeQueryEngine() *NativeQueryEngine {
 		GovQueryHandler:       gov.NewQueryClient(config.GrpcClient),
 		InflationQueryHandler: minttypes.NewQueryClient(config.GrpcClient), // Use the NewQueryClient function from the Cosmos SDK's mint module
 		StakingQueryHandler:   staking.NewQueryClient(config.GrpcClient),
+		DistributionQueryHandler: distrtypes.NewQueryClient(config.GrpcClient),
 	}
 }
 

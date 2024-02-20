@@ -142,3 +142,29 @@ func QueryProposalByID(ctx *fiber.Ctx) error {
 	})
 	return ctx.Status(StatusOkay).SendString(result)
 }
+
+
+// QueryDelegationsByAddress godoc
+// @Summary      Query delegations by delegator address
+// @Description  return json object of delegations for a given delegator address
+// @Accept       json
+// @Produce      json
+// @Param        address path string true "delegator address"
+// @Success      200  {object}  map[string]interface{}
+// @Router       /staking/delegations/{address} [get]
+func QueryDelegationsByAddress(ctx *fiber.Ctx) error {
+    delegatorAddress := ctx.Params("address")
+    
+    // Directly fetch delegations from blockchain without using Redis cache
+    delegationsResponse, err := nativequeryengine.FetchUserDelegations(context.Background(), nativequeryengine.NewNativeQueryEngine().StakingQueryHandler, nativequeryengine.NewNativeQueryEngine().DistributionQueryHandler, delegatorAddress)
+    if err != nil {
+        // Handle error if fetching from blockchain fails
+        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "error": fmt.Sprintf("Failed to fetch delegations for address: %s, error: %v", delegatorAddress, err),
+        })
+    }
+
+    // Return the freshly fetched delegations
+    return ctx.Status(fiber.StatusOK).JSON(delegationsResponse)
+}
+

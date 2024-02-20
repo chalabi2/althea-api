@@ -2,12 +2,15 @@ package queryengine
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 
 	csr "github.com/Canto-Network/Canto/v6/x/csr/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	query "github.com/cosmos/cosmos-sdk/types/query"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
 	inflation "github.com/cosmos/cosmos-sdk/x/mint/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -79,6 +82,171 @@ func GetStakingAPR(ctx context.Context, stakingQueryClient staking.QueryClient, 
     apr := mintProvisionAmount.Quo(bondedTokensDec).MulInt64(100) // Adjusted to multiply by 100 for percentage
     
     return apr, nil // Return calculated APR and no error
+}
+
+// USER DELEGATIONS
+
+type DelegationResponse struct {
+	Delegations          []DelegationInfo      `json:"delegations"`
+	UnbondingDelegations []UnbondingDelegation `json:"unbondingDelegations"`
+	Rewards              RewardsInfo           `json:"rewards"`
+}
+
+
+// DelegationInfo holds information about a single delegation.
+type DelegationInfo struct {
+	Delegation Delegation `json:"delegation"`
+	Balance    Balance    `json:"balance"`
+}
+
+// Delegation holds the delegator and validator addresses and the amount of shares.
+type Delegation struct {
+	DelegatorAddress string `json:"delegator_address"`
+	ValidatorAddress string `json:"validator_address"`
+	Shares           string `json:"shares"`
+}
+
+// Balance holds the denomination and amount of tokens.
+type Balance struct {
+	Denom  string `json:"denom"`
+	Amount string `json:"amount"`
+}
+
+// RewardsInfo holds information about rewards.
+type RewardsInfo struct {
+    Rewards []ValidatorReward `json:"rewards"`
+    Total   []Balance         `json:"total"`
+}
+
+type UnbondingDelegation struct {
+    DelegatorAddress   string `json:"delegator_address"`
+    ValidatorAddress   string `json:"validator_address"`
+    CreationHeight     int64  `json:"creation_height"`
+    CompletionTime     time.Time `json:"completion_time"`
+    InitialBalance     string `json:"initial_balance"`
+    Balance            string `json:"balance"`
+}
+
+func (r RewardsInfo) MarshalJSON() ([]byte, error) {
+    type Alias RewardsInfo
+    if r.Rewards == nil {
+        r.Rewards = []ValidatorReward{} // Ensure an empty slice, not nil
+    }
+    if r.Total == nil {
+        r.Total = []Balance{} // Ensure an empty slice, not nil
+    }
+    return json.Marshal((Alias)(r))
+}
+
+// ValidatorReward holds information about rewards from a specific validator.
+type ValidatorReward struct {
+	ValidatorAddress string    `json:"validator_address"`
+	Reward           []Balance `json:"reward"`
+}
+
+
+
+// FetchUserDelegations fetches delegations for a specific user.
+func FetchUserDelegations(ctx context.Context, stakingQueryClient staking.QueryClient, distributionQueryClient distrtypes.QueryClient, delegatorAddress string) (*DelegationResponse, error) {
+    response := &DelegationResponse{}
+
+    // Fetch delegations
+    delegationResp, err := stakingQueryClient.DelegatorDelegations(ctx, &staking.QueryDelegatorDelegationsRequest{
+        DelegatorAddr: delegatorAddress,
+        Pagination: &query.PageRequest{Limit: 100}, // Adjust pagination as needed
+    })
+    if err != nil {
+        return nil, fmt.Errorf("failed to fetch delegations: %w", err)
+    }
+
+    // Handle delegations response
+    for _, del := range delegationResp.DelegationResponses {
+        response.Delegations = append(response.Delegations, DelegationInfo{
+            Delegation: Delegation{
+                DelegatorAddress: del.Delegation.DelegatorAddress,
+                ValidatorAddress: del.Delegation.ValidatorAddress,
+                Shares:           del.Delegation.Shares.String(),
+            },
+            Balance: Balance{
+                Denom:  del.Balance.Denom,
+                Amount: del.Balance.Amount.String(),
+            },
+        })
+    }
+
+    // Fetch unbonding delegations
+    unbondingResp, err := stakingQueryClient.DelegatorUnbondingDelegations(ctx, &staking.QueryDelegatorUnbondingDelegationsRequest{
+        DelegatorAddr: delegatorAddress,
+        Pagination: &query.PageRequest{Limit: 100}, // Adjust pagination as needed
+    })
+    if err != nil {
+        return nil, fmt.Errorf("failed to fetch unbonding delegations: %w", err)
+    }
+
+    // Handle unbonding delegations response
+    for _, unbond := range unbondingResp.UnbondingResponses {
+        for _, entry := range unbond.Entries {
+            response.UnbondingDelegations = append(response.UnbondingDelegations, UnbondingDelegation{
+                DelegatorAddress: unbond.DelegatorAddress,
+                ValidatorAddress: unbond.ValidatorAddress,
+                CreationHeight:   entry.CreationHeight,
+                CompletionTime:   entry.CompletionTime,
+                InitialBalance:   entry.InitialBalance.String(),
+                Balance:          entry.Balance.String(),
+            })
+        }
+    }
+
+    // If no unbonding delegations, set to nil explicitly
+    if len(response.UnbondingDelegations) == 0 {
+        response.UnbondingDelegations = nil
+    }
+
+    // Fetch rewards
+    rewardsResp, err := distributionQueryClient.DelegationTotalRewards(ctx, &distrtypes.QueryDelegationTotalRewardsRequest{
+        DelegatorAddress: delegatorAddress,
+    })
+    if err != nil {
+        return nil, fmt.Errorf("failed to fetch rewards: %w", err)
+    }
+
+    // Handle rewards response
+    for _, reward := range rewardsResp.Rewards {
+        var validatorRewards []Balance
+        for _, valReward := range reward.Reward {
+            validatorRewards = append(validatorRewards, Balance{
+                Denom:  valReward.Denom,
+                Amount: valReward.Amount.String(),
+            })
+        }
+        response.Rewards.Rewards = append(response.Rewards.Rewards, ValidatorReward{
+            ValidatorAddress: reward.ValidatorAddress,
+            Reward:           validatorRewards,
+        })
+    }
+
+    // Calculate total rewards
+    var total []Balance
+    for _, reward := range response.Rewards.Rewards {
+        for _, valReward := range reward.Reward {
+            found := false
+            for i, totalReward := range total {
+                if totalReward.Denom == valReward.Denom {
+                    amount, _ := strconv.ParseFloat(totalReward.Amount, 64)
+                    rewardAmount, _ := strconv.ParseFloat(valReward.Amount, 64)
+                    total[i].Amount = fmt.Sprintf("%f", amount+rewardAmount)
+                    found = true
+                    break
+                }
+            }
+            if !found {
+                total = append(total, valReward)
+            }
+        }
+    }
+    response.Rewards.Total = total
+
+    return response, nil
 }
 
 // GOVSHUTTLE

@@ -30,6 +30,7 @@ const (
 	CTokens             = "CTOKENS"
 	ProcessedCTokens    = "PROCESSED_CTOKENS"
 	ProcessedCTokensMap = "PROCESSED_CTOKENS_MAP"
+	UserDelegations 	= "USER_DELEGATIONS"
 )
 
 var (

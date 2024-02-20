@@ -63,6 +63,7 @@ func routerStaking(app *fiber.App) {
 	staking.Get("/apr", QueryStakingAPR)
 	staking.Get("/validators", QueryValidators)
 	staking.Get("/validators/:address", QueryValidatorByAddress)
+	staking.Get("/delegations/:address", QueryDelegationsByAddress)
 }
 
 // @title Canto API
