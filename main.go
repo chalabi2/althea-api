@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 
-	"canto-api/config"
-	// cqe "canto-api/queryengine/contracts"
-	nqe "canto-api/queryengine/native"
-	re "canto-api/requestengine"
+	"althea-api/config"
+	// cqe "althea-api/queryengine/contracts"
+	nqe "althea-api/queryengine/native"
+	re "althea-api/requestengine"
 )
 
 func main() {

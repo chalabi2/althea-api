@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"canto-api/config"
+	"althea-api/config"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"

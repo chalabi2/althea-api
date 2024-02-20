@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"canto-api/config"
+	"althea-api/config"
 
 	cantoConfig "github.com/Canto-Network/Canto/v6/cmd/config"
 	"github.com/gofiber/fiber/v2"

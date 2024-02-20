@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"strings"
 
-	"canto-api/config"
-	queryengine "canto-api/queryengine/contracts"
+	"althea-api/config"
+	queryengine "althea-api/queryengine/contracts"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"

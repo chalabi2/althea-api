@@ -6,13 +6,13 @@ import (
 	"os"
 	"strings"
 
-	"canto-api/config"
+	"althea-api/config"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
 	"github.com/rs/zerolog/log"
 
-	_ "canto-api/docs"
+	_ "althea-api/docs"
 )
 
 // GetGeneralContractRoutes returns a slice of routes for general contracts

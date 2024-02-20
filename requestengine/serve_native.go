@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"canto-api/config"
-	nativequeryengine "canto-api/queryengine/native"
+	"althea-api/config"
+	nativequeryengine "althea-api/queryengine/native"
 
 	"github.com/gofiber/fiber/v2"
 )

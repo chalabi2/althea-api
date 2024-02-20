@@ -1,8 +1,8 @@
 package queryengine
 
 import (
-	"canto-api/config"
-	"canto-api/multicall"
+	"althea-api/config"
+	"althea-api/multicall"
 	"context"
 	"reflect"
 	"testing"

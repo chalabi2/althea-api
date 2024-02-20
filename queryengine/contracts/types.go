@@ -1,6 +1,6 @@
 package queryengine
 
-import "canto-api/config"
+import "althea-api/config"
 
 type ProcessedPair struct {
 	Address     string       `json:"address"`

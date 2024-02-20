@@ -1,4 +1,4 @@
-module canto-api
+module althea-api
 
 go 1.20
 

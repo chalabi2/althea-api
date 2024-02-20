@@ -1,7 +1,7 @@
 package queryengine
 
 import (
-	"canto-api/multicall"
+	"althea-api/multicall"
 	"encoding/hex"
 	"fmt"
 	"math/big"

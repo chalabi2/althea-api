@@ -14,7 +14,7 @@ services:
     env_file:
       - .env
 
-  canto-api:
+  althea-api:
     restart: unless-stopped
     build:
       context: .

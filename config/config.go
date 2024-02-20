@@ -65,7 +65,7 @@ func NewConfig() {
 	})
 
 	// Initialize eth client using mainnet rpc
-	rpcUrl := os.Getenv("CANTO_MAINNET_RPC_URL")
+	rpcUrl := os.Getenv("ALTHEA_MAINNET_RPC_URL")
 	ethclient, err := ethclient.Dial(rpcUrl)
 	if err != nil {
 		log.Fatal().Msgf("Error initializing eth client: %v", err)
@@ -73,7 +73,7 @@ func NewConfig() {
 	EthClient = ethclient
 
 	// Initialize grpc client using mainnet rpc
-	grpcUrl := os.Getenv("CANTO_MAINNET_GRPC_URL")
+	grpcUrl := os.Getenv("ALTHEA_MAINNET_GRPC_URL")
 	GrpcClient, err = grpc.Dial(grpcUrl, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal().Msgf("Error initializing grpc client: %v", err)
@@ -123,7 +123,7 @@ func NewConfig() {
 
 func SetBackupRPC() {
 	// get backup rpc urls from env
-	rpcUrls := os.Getenv("CANTO_BACKUP_RPC_URLS")
+	rpcUrls := os.Getenv("ALTHEA_BACKUP_RPC_URLS")
 	// split rpc urls into array
 	rpcUrlsArr := strings.Split(rpcUrls, ",")
 	// get length of rpc urls array

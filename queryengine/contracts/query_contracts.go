@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"canto-api/config"
-	"canto-api/multicall"
+	"althea-api/config"
+	"althea-api/multicall"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"

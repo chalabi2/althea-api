@@ -1,4 +1,4 @@
 *.rdb
-/canto-api
-canto-api
+/althea-api
+althea-api
 .env

@@ -8,8 +8,8 @@ import (
 	"math/big"
 	"time"
 
-	"canto-api/config"
-	"canto-api/multicall"
+	"althea-api/config"
+	"althea-api/multicall"
 
 	"errors"
 	"regexp"

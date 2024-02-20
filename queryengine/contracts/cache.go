@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"canto-api/config"
+	"althea-api/config"
 )
 
 // SetJsonToCache will take key, result and sets the resulte as a json string to redis
