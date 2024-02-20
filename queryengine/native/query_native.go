@@ -10,7 +10,7 @@ import (
 	csr "github.com/Canto-Network/Canto/v6/x/csr/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types" // Import the Cosmos SDK's mint types
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
@@ -22,7 +22,7 @@ type NativeQueryEngine struct {
 	//query handlers
 	CSRQueryHandler       csr.QueryClient
 	GovQueryHandler       gov.QueryClient
-	InflationQueryHandler minttypes.QueryClient // Use the correct QueryClient type from the Cosmos SDK's mint module
+	InflationQueryHandler minttypes.QueryClient 
 	StakingQueryHandler   staking.QueryClient
 	DistributionQueryHandler distrtypes.QueryClient
 }
@@ -34,7 +34,7 @@ func NewNativeQueryEngine() *NativeQueryEngine {
 		interval:              time.Duration(config.QueryInterval),
 		CSRQueryHandler:       csr.NewQueryClient(config.GrpcClient),
 		GovQueryHandler:       gov.NewQueryClient(config.GrpcClient),
-		InflationQueryHandler: minttypes.NewQueryClient(config.GrpcClient), // Use the NewQueryClient function from the Cosmos SDK's mint module
+		InflationQueryHandler: minttypes.NewQueryClient(config.GrpcClient), 
 		StakingQueryHandler:   staking.NewQueryClient(config.GrpcClient),
 		DistributionQueryHandler: distrtypes.NewQueryClient(config.GrpcClient),
 	}

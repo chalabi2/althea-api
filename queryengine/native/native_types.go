@@ -93,26 +93,25 @@ type DelegationResponse struct {
 }
 
 
-// DelegationInfo holds information about a single delegation.
 type DelegationInfo struct {
 	Delegation Delegation `json:"delegation"`
 	Balance    Balance    `json:"balance"`
 }
 
-// Delegation holds the delegator and validator addresses and the amount of shares.
+
 type Delegation struct {
 	DelegatorAddress string `json:"delegator_address"`
 	ValidatorAddress string `json:"validator_address"`
 	Shares           string `json:"shares"`
 }
 
-// Balance holds the denomination and amount of tokens.
+
 type Balance struct {
 	Denom  string `json:"denom"`
 	Amount string `json:"amount"`
 }
 
-// RewardsInfo holds information about rewards.
+
 type RewardsInfo struct {
     Rewards []ValidatorReward `json:"rewards"`
     Total   []Balance         `json:"total"`
@@ -130,15 +129,15 @@ type UnbondingDelegation struct {
 func (r RewardsInfo) MarshalJSON() ([]byte, error) {
     type Alias RewardsInfo
     if r.Rewards == nil {
-        r.Rewards = []ValidatorReward{} // Ensure an empty slice, not nil
+        r.Rewards = []ValidatorReward{} 
     }
     if r.Total == nil {
-        r.Total = []Balance{} // Ensure an empty slice, not nil
+        r.Total = []Balance{} 
     }
     return json.Marshal((Alias)(r))
 }
 
-// ValidatorReward holds information about rewards from a specific validator.
+
 type ValidatorReward struct {
 	ValidatorAddress string    `json:"validator_address"`
 	Reward           []Balance `json:"reward"`
@@ -177,7 +176,7 @@ func FetchUserDelegations(ctx context.Context, stakingQueryClient staking.QueryC
     // Fetch unbonding delegations
     unbondingResp, err := stakingQueryClient.DelegatorUnbondingDelegations(ctx, &staking.QueryDelegatorUnbondingDelegationsRequest{
         DelegatorAddr: delegatorAddress,
-        Pagination: &query.PageRequest{Limit: 100}, // Adjust pagination as needed
+        Pagination: &query.PageRequest{Limit: 100}, 
     })
     if err != nil {
         return nil, fmt.Errorf("failed to fetch unbonding delegations: %w", err)
