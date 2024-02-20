@@ -4,15 +4,16 @@ import (
 	"reflect"
 	"testing"
 
-	inflation "github.com/Canto-Network/Canto/v6/x/inflation/types"
+	"github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	inflation "github.com/cosmos/cosmos-sdk/x/mint/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 func TestGetStakingAPR(t *testing.T) {
 	type args struct {
 		pool          staking.QueryPoolResponse
-		mintProvision inflation.QueryEpochMintProvisionResponse
+		mintProvision inflation.QueryAnnualProvisionsResponse
 	}
 	tests := []struct {
 		name string
@@ -27,7 +28,7 @@ func TestGetStakingAPR(t *testing.T) {
 						BondedTokens: sdk.ZeroInt(),
 					},
 				},
-				mintProvision: inflation.QueryEpochMintProvisionResponse{
+				mintProvision: inflation.QueryAnnualProvisionsResponse{
 					EpochMintProvision: sdk.NewDecCoin("acanto", sdk.NewInt(100)),
 				},
 			},
@@ -41,7 +42,7 @@ func TestGetStakingAPR(t *testing.T) {
 						BondedTokens: sdk.NewInt(100),
 					},
 				},
-				mintProvision: inflation.QueryEpochMintProvisionResponse{
+				mintProvision: inflation.QueryAnnualProvisionsResponse{
 					EpochMintProvision: sdk.NewDecCoin("acanto", sdk.ZeroInt()),
 				},
 			},
@@ -55,8 +56,8 @@ func TestGetStakingAPR(t *testing.T) {
 						BondedTokens: sdk.NewInt(100),
 					},
 				},
-				mintProvision: inflation.QueryEpochMintProvisionResponse{
-					EpochMintProvision: sdk.NewDecCoin("acanto", sdk.NewInt(100000000000)),
+				mintProvision: inflation.QueryAnnualProvisionsResponse{
+					AnnualProvisions: types.NewDecWithPrec(100, 0),
 				},
 			},
 			want: sdk.NewDec(36500000000000),
@@ -69,7 +70,7 @@ func TestGetStakingAPR(t *testing.T) {
 						BondedTokens: sdk.NewInt(100000000000),
 					},
 				},
-				mintProvision: inflation.QueryEpochMintProvisionResponse{
+				mintProvision: inflation.QueryAnnualProvisionsResponse{
 					EpochMintProvision: sdk.NewDecCoin("acanto", sdk.NewInt(100)),
 				},
 			},
