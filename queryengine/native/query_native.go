@@ -129,18 +129,26 @@ func (nqe *NativeQueryEngine) StartNativeQueryEngine(ctx context.Context) {
 		// GOVSHUTTLE
 		//
 		proposals, proposalMap, err := GetAllProposals(ctx, nqe.GovQueryHandler)
-		if err != nil {
-			nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to get proposals")
-		}
-		err = nqe.SetJsonToCache(ctx, config.AllProposals, proposals)
-		if err != nil {
-			nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to set proposals")
-		}
-		err = nqe.SetMapToCache(ctx, config.ProposalMap, proposalMap)
-		if err != nil {
-			nativeQueryEngineFatalLog(err, "StartNativeQueryEngine", "failed to set proposal map")
-		}
-	}
+        if err != nil {
+            log.Error().Err(err).Str("func", "GetAllProposals").Msg("Failed to get proposals")
+            continue // Skip this iteration on error
+        }
+
+        err = nqe.SetJsonToCache(ctx, config.AllProposals, proposals)
+        if err != nil {
+            log.Error().Err(err).Str("func", "SetJsonToCache").Msg("Failed to set proposals")
+            // Handle the error or continue based on your error handling strategy
+        }
+
+        if proposalMap != nil && len(proposalMap) > 0 {
+            // Save to cache
+            err = nqe.SetMapToCache(ctx, config.ProposalMap, proposalMap)
+            if err != nil {
+                log.Error().Err(err).Str("func", "SetMapToCache").Msg("Failed to set proposal map")
+                // Handle the error or continue based on your error handling strategy
+            }
+        }
+    }
 }
 
 // RunNative initializes a NativeQueryEngine and starts it

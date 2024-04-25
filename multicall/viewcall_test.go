@@ -30,7 +30,7 @@ func TestViewCall_argumentTypes(t *testing.T) {
 			fields: fields{
 				target:    "0x0000",
 				method:    "balanceOf(address)",
-				arguments: []interface{}{"0x71C7656EC7ab88b098defB751B7401B5f6d8976F"},
+				arguments: []interface{}{"0x5785e0027a8c937627C01C9EB5F543bA42f8BB6b"},
 			},
 			want: []string{"address"},
 		},
@@ -39,7 +39,7 @@ func TestViewCall_argumentTypes(t *testing.T) {
 			fields: fields{
 				target:    "0x0000",
 				method:    "doSomething(address,address,uint256,string)",
-				arguments: []interface{}{"0x71C7656EC7ab88b098defB751B7401B5f6d8976F"},
+				arguments: []interface{}{"0x5785e0027a8c937627C01C9EB5F543bA42f8BB6b"},
 			},
 			want: []string{
 				"address",
